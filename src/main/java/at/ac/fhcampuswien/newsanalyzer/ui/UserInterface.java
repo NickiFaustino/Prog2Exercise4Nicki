@@ -3,6 +3,7 @@ package at.ac.fhcampuswien.newsanalyzer.ui;
 
 import at.ac.fhcampuswien.newsanalyzer.ctrl.Controller;
 import at.ac.fhcampuswien.newsanalyzer.ctrl.NewsAPIException;
+import at.ac.fhcampuswien.newsanalyzer.downloader.ParallelDownloader;
 import at.ac.fhcampuswien.newsanalyzer.downloader.SequentialDownloader;
 import at.ac.fhcampuswien.newsapi.NewsApi;
 import at.ac.fhcampuswien.newsapi.NewsApiBuilder;
@@ -38,6 +39,16 @@ public class UserInterface {
 
 		System.out.println(result);
 	}
+	private void getLastSearchSequence() throws NewsAPIException {
+		List<String> URLs = ctrl.getURLs();
+		SequentialDownloader sequence = new SequentialDownloader();
+		sequence.process(URLs);
+	}
+	private void getLastSearchParallel() throws NewsAPIException {
+		List<String> URLs = ctrl.getURLs();
+		ParallelDownloader parallel = new ParallelDownloader();
+		parallel.process(URLs);
+	}
 
 	public void start() {
 		Menu<Runnable> menu = new Menu<>("User Interface");
@@ -59,7 +70,28 @@ public class UserInterface {
 			}
 
 		});
-		menu.insert("c", "Download Last Search", null);
+		menu.insert("c", "Download Last Search", ()->{
+			System.out.println("Sequential Download: ");
+			long startseq = System.currentTimeMillis();
+			try {
+				getLastSearchSequence();
+			} catch (NewsAPIException e) {
+				e.printStackTrace();
+			}
+			long endseq = System.currentTimeMillis();
+			System.out.println("Download Time: "+(endseq-startseq));
+
+			System.out.println("\n Parallel Download: ");
+			long startpar = System.currentTimeMillis();
+			try {
+				getLastSearchParallel();
+			} catch (NewsAPIException e) {
+				e.printStackTrace();
+			}
+			long endpar = System.currentTimeMillis();
+			System.out.println("Download Time: "+(endpar-startpar));
+
+		});
 		menu.insert("q", "Quit", null);
 		Runnable choice;
 		while ((choice = menu.exec()) != null) {
