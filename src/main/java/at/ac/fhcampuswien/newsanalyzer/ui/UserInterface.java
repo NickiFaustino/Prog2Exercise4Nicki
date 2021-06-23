@@ -3,6 +3,7 @@ package at.ac.fhcampuswien.newsanalyzer.ui;
 
 import at.ac.fhcampuswien.newsanalyzer.ctrl.Controller;
 import at.ac.fhcampuswien.newsanalyzer.ctrl.NewsAPIException;
+import at.ac.fhcampuswien.newsanalyzer.downloader.SequentialDownloader;
 import at.ac.fhcampuswien.newsapi.NewsApi;
 import at.ac.fhcampuswien.newsapi.NewsApiBuilder;
 import at.ac.fhcampuswien.newsapi.enums.Country;
@@ -11,6 +12,7 @@ import at.ac.fhcampuswien.newsapi.enums.Endpoint;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 
 public class UserInterface {
 
@@ -37,7 +39,6 @@ public class UserInterface {
 		System.out.println(result);
 	}
 
-
 	public void start() {
 		Menu<Runnable> menu = new Menu<>("User Interface");
 		menu.insert("a", "Top headlines for Austria", this::getTopHeadlinesAustria);
@@ -49,7 +50,16 @@ public class UserInterface {
 		menu.insert("z", "Sort by longest title", this::getSortArticlesByLongestTitle); // Exercise 3
 		menu.insert("g", "Download URLs", () -> {
 			//Todo
+			try {
+				List<String> URLs = ctrl.getURLs();
+				SequentialDownloader sequence = new SequentialDownloader();
+				sequence.process(URLs);
+			} catch (NewsAPIException e) {
+				e.printStackTrace();
+			}
+
 		});
+		menu.insert("c", "Download Last Search", null);
 		menu.insert("q", "Quit", null);
 		Runnable choice;
 		while ((choice = menu.exec()) != null) {
